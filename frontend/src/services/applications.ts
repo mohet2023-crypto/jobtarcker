@@ -4,7 +4,9 @@ import type {
   ApplicationCreateRequest,
   ApplicationListParams,
   ApplicationListResponse,
+  ApplicationUpdateRequest,
 } from '../types/application'
+import type { ApplicationEventsResponse } from '../types/event'
 
 export async function getApplications(
   params: ApplicationListParams = {},
@@ -39,6 +41,10 @@ export async function getApplications(
   )
 }
 
+export async function getApplication(id: number): Promise<Application> {
+  return apiJson<Application>(`/applications/${id}`)
+}
+
 export async function createApplication(
   data: ApplicationCreateRequest,
 ): Promise<Application> {
@@ -46,4 +52,20 @@ export async function createApplication(
     method: 'POST',
     body: data,
   })
+}
+
+export async function updateApplication(
+  id: number,
+  data: ApplicationUpdateRequest,
+): Promise<Application> {
+  return apiJson<Application>(`/applications/${id}`, {
+    method: 'PATCH',
+    body: data,
+  })
+}
+
+export async function getApplicationEvents(
+  id: number,
+): Promise<ApplicationEventsResponse> {
+  return apiJson<ApplicationEventsResponse>(`/applications/${id}/events`)
 }

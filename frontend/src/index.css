@@ -1058,3 +1058,264 @@ a:hover {
   }
 }
 
+.detail-page {
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.detail-back {
+  display: inline-block;
+  margin-bottom: 1.25rem;
+  color: #0f4c5c;
+  font-weight: 700;
+}
+
+.detail-back:hover {
+  text-decoration: underline;
+}
+
+.detail-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.detail-header h1 {
+  margin: 0 0 0.35rem;
+  font-size: clamp(1.75rem, 2.5vw, 2.25rem);
+  letter-spacing: -0.02em;
+}
+
+.detail-position {
+  margin: 0 0 0.75rem;
+  color: #57534e;
+  font-size: 1.1rem;
+}
+
+.detail-header-status {
+  display: flex;
+  align-items: center;
+}
+
+.detail-edit {
+  flex-shrink: 0;
+  padding: 0.65rem 1.1rem;
+  border: 1px solid #0f4c5c;
+  border-radius: 0.4rem;
+  background: #0f4c5c;
+  color: #fffdf9;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.detail-edit:hover {
+  background: #0b3a46;
+}
+
+.detail-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.95fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.detail-panel {
+  padding: 1.35rem 1.35rem 1.25rem;
+  border: 1px solid #d6d0c4;
+  border-radius: 0.75rem;
+  background: #fffdf9;
+  box-shadow: 0 1px 2px rgb(28 25 23 / 4%);
+}
+
+.detail-panel h2 {
+  margin: 0 0 1rem;
+  font-size: 1.2rem;
+}
+
+.detail-list {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.detail-row {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.detail-row dt {
+  color: #78716c;
+  font-size: 0.92rem;
+}
+
+.detail-row dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.detail-notes {
+  white-space: pre-wrap;
+}
+
+.detail-state {
+  padding: 2rem 1.25rem;
+  border: 1px solid #d6d0c4;
+  border-radius: 0.75rem;
+  background: #fffdf9;
+  text-align: center;
+}
+
+.detail-state p {
+  margin: 0;
+  color: #57534e;
+}
+
+.detail-state-title {
+  margin: 0 0 1rem !important;
+  color: #1c1917 !important;
+  font-weight: 700;
+  font-size: 1.15rem;
+}
+
+.detail-state-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.detail-state-error p {
+  color: #8a2f22;
+}
+
+.detail-back-button {
+  display: inline-block;
+  padding: 0.65rem 1rem;
+  border: 1px solid #0f4c5c;
+  border-radius: 0.4rem;
+  background: #0f4c5c;
+  color: #fffdf9;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.detail-back-button:hover {
+  background: #0b3a46;
+  text-decoration: none;
+  color: #fffdf9;
+}
+
+.timeline-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.timeline-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.1rem minmax(0, 1fr);
+  gap: 0.85rem;
+  padding-bottom: 1.25rem;
+}
+
+.timeline-item:last-child {
+  padding-bottom: 0;
+}
+
+.timeline-item:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 0.42rem;
+  top: 0.85rem;
+  bottom: 0;
+  width: 2px;
+  background: #d6d0c4;
+}
+
+.timeline-marker {
+  width: 0.85rem;
+  height: 0.85rem;
+  margin-top: 0.2rem;
+  border: 2px solid #0f4c5c;
+  border-radius: 999px;
+  background: #fffdf9;
+  z-index: 1;
+}
+
+.timeline-content {
+  min-width: 0;
+}
+
+.timeline-title {
+  margin: 0 0 0.25rem;
+  font-weight: 700;
+}
+
+.timeline-meta,
+.timeline-time,
+.timeline-notes,
+.timeline-empty,
+.timeline-error {
+  margin: 0;
+}
+
+.timeline-meta {
+  color: #57534e;
+}
+
+.timeline-time {
+  margin-top: 0.25rem;
+  color: #78716c;
+  font-size: 0.92rem;
+}
+
+.timeline-notes {
+  margin-top: 0.45rem;
+  color: #57534e;
+  white-space: pre-wrap;
+}
+
+.timeline-empty {
+  color: #78716c;
+}
+
+.timeline-error {
+  padding: 0.65rem 0.75rem;
+  border: 1px solid #c45c4a;
+  border-radius: 0.4rem;
+  background: #fdf2f0;
+  color: #8a2f22;
+}
+
+@media (max-width: 900px) {
+  .detail-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .detail-header {
+    flex-direction: column;
+  }
+
+  .detail-edit {
+    width: 100%;
+  }
+
+  .detail-row {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+  }
+}
+

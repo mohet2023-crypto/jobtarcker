@@ -61,6 +61,18 @@ export type ApplicationCreateRequest = {
   notes?: string | null
 }
 
+export type ApplicationUpdateRequest = {
+  company?: string
+  position?: string
+  job_url?: string | null
+  status?: ApplicationStatus
+  location?: string | null
+  salary?: string | null
+  applied_at?: string | null
+  deadline?: string | null
+  notes?: string | null
+}
+
 export const APPLICATION_STATUS_ORDER: ApplicationStatus[] = [
   'SAVED',
   'APPLIED',

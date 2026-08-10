@@ -2,6 +2,7 @@ import { useEffect, useState, type ChangeEvent } from 'react'
 import { Link } from 'react-router-dom'
 
 import { CreateApplicationModal } from '../components/CreateApplicationModal'
+import { StatusBadge } from '../components/StatusBadge'
 import { getApplications } from '../services/applications'
 import {
   APPLICATION_STATUS_LABELS,
@@ -12,26 +13,10 @@ import {
   type ApplicationSortOrder,
   type ApplicationStatus,
 } from '../types/application'
+import { formatDate } from '../utils/datetime'
 
 const PAGE_SIZE = 20
 const DEBOUNCE_MS = 350
-
-function formatDate(value: string | null): string {
-  if (!value) {
-    return '—'
-  }
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) {
-    return value
-  }
-  return date.toLocaleDateString(undefined, {
-    dateStyle: 'medium',
-  })
-}
-
-function statusClassName(status: ApplicationStatus): string {
-  return `status-badge status-${status.toLowerCase()}`
-}
 
 function ApplicationIdentity({ application }: { application: Application }) {
   return (
@@ -42,14 +27,6 @@ function ApplicationIdentity({ application }: { application: Application }) {
       <span className="app-company">{application.company}</span>
       <span className="app-position">{application.position}</span>
     </Link>
-  )
-}
-
-function StatusBadge({ status }: { status: ApplicationStatus }) {
-  return (
-    <span className={statusClassName(status)}>
-      {APPLICATION_STATUS_LABELS[status]}
-    </span>
   )
 }
 

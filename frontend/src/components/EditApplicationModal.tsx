@@ -1,21 +1,24 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 
 import { ApiError } from '../services/api'
-import { createApplication } from '../services/applications'
+import { updateApplication } from '../services/applications'
 import {
   APPLICATION_STATUS_LABELS,
   APPLICATION_STATUS_ORDER,
+  type Application,
   type ApplicationStatus,
 } from '../types/application'
 import {
   datetimeLocalToIso,
   emptyToNull,
+  isoToDatetimeLocal,
 } from '../utils/datetime'
 
-type CreateApplicationModalProps = {
+type EditApplicationModalProps = {
   open: boolean
+  application: Application
   onClose: () => void
-  onCreated: () => void
+  onUpdated: () => void
 }
 
 type FormState = {
@@ -30,26 +33,31 @@ type FormState = {
   notes: string
 }
 
-const INITIAL_FORM: FormState = {
-  company: '',
-  position: '',
-  jobUrl: '',
-  status: 'SAVED',
-  location: '',
-  salary: '',
-  appliedAt: '',
-  deadline: '',
-  notes: '',
+function formFromApplication(application: Application): FormState {
+  return {
+    company: application.company,
+    position: application.position,
+    jobUrl: application.job_url ?? '',
+    status: application.status,
+    location: application.location ?? '',
+    salary: application.salary ?? '',
+    appliedAt: isoToDatetimeLocal(application.applied_at),
+    deadline: isoToDatetimeLocal(application.deadline),
+    notes: application.notes ?? '',
+  }
 }
 
-export function CreateApplicationModal({
+export function EditApplicationModal({
   open,
+  application,
   onClose,
-  onCreated,
-}: CreateApplicationModalProps) {
+  onUpdated,
+}: EditApplicationModalProps) {
   const titleId = useId()
   const companyRef = useRef<HTMLInputElement>(null)
-  const [form, setForm] = useState<FormState>(INITIAL_FORM)
+  const [form, setForm] = useState<FormState>(() =>
+    formFromApplication(application),
+  )
   const [validationError, setValidationError] = useState<string | null>(null)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -59,7 +67,7 @@ export function CreateApplicationModal({
       return
     }
 
-    setForm(INITIAL_FORM)
+    setForm(formFromApplication(application))
     setValidationError(null)
     setSubmitError(null)
     setIsSubmitting(false)
@@ -69,7 +77,7 @@ export function CreateApplicationModal({
     })
 
     return () => window.cancelAnimationFrame(frame)
-  }, [open])
+  }, [open, application])
 
   useEffect(() => {
     if (!open) {
@@ -118,7 +126,7 @@ export function CreateApplicationModal({
     setIsSubmitting(true)
 
     try {
-      await createApplication({
+      await updateApplication(application.id, {
         company,
         position,
         job_url: emptyToNull(form.jobUrl),
@@ -129,13 +137,13 @@ export function CreateApplicationModal({
         deadline: datetimeLocalToIso(form.deadline),
         notes: emptyToNull(form.notes),
       })
-      onCreated()
+      onUpdated()
       onClose()
     } catch (err) {
       if (err instanceof ApiError && err.message) {
         setSubmitError(err.message)
       } else {
-        setSubmitError('Unable to create application. Please try again.')
+        setSubmitError('Unable to update application. Please try again.')
       }
     } finally {
       setIsSubmitting(false)
@@ -151,7 +159,7 @@ export function CreateApplicationModal({
         aria-labelledby={titleId}
       >
         <div className="modal-header">
-          <h2 id={titleId}>Add Application</h2>
+          <h2 id={titleId}>Edit Application</h2>
           <button
             type="button"
             className="modal-close"
@@ -299,7 +307,7 @@ export function CreateApplicationModal({
               className="modal-primary"
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Creating...' : 'Create Application'}
+              {isSubmitting ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </form>
