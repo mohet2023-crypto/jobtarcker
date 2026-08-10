@@ -6,10 +6,12 @@ from sqlalchemy import create_engine, event
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
-# Ensure JWT settings exist before app imports load security helpers.
+# Ensure JWT / app settings exist before app imports load config helpers.
+os.environ["APP_ENV"] = "development"
 os.environ["JWT_SECRET_KEY"] = "test-only-jwt-secret-key-not-for-production"
 os.environ["JWT_ALGORITHM"] = "HS256"
 os.environ["JWT_ACCESS_TOKEN_EXPIRE_MINUTES"] = "30"
+os.environ.setdefault("FRONTEND_ORIGIN", "http://localhost:5173")
 
 from app.db.database import Base  # noqa: E402
 from app.db.dependencies import get_db  # noqa: E402
