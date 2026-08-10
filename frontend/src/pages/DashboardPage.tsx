@@ -20,6 +20,16 @@ const STATUS_ORDER: ApplicationStatus[] = [
   'WITHDRAWN',
 ]
 
+const STATUS_LABELS: Record<ApplicationStatus, string> = {
+  SAVED: 'Saved',
+  APPLIED: 'Applied',
+  SCREENING: 'Screening',
+  INTERVIEW: 'Interview',
+  OFFER: 'Offer',
+  REJECTED: 'Rejected',
+  WITHDRAWN: 'Withdrawn',
+}
+
 function formatDaysRemaining(days: number): string {
   if (days === 0) {
     return 'Today'
@@ -41,11 +51,29 @@ function formatDeadline(deadline: string): string {
   })
 }
 
+function urgencyClass(daysRemaining: number): string {
+  if (daysRemaining === 0) {
+    return 'urgency-today'
+  }
+  if (daysRemaining <= 3) {
+    return 'urgency-soon'
+  }
+  return 'urgency-normal'
+}
+
+function statusBarWidth(count: number, total: number): string {
+  if (total <= 0 || count <= 0) {
+    return '0%'
+  }
+  return `${(count / total) * 100}%`
+}
+
 export function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [upcoming, setUpcoming] = useState<UpcomingDeadline[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
     let cancelled = false
@@ -82,15 +110,24 @@ export function DashboardPage() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [reloadKey])
+
+  function handleRetry() {
+    setReloadKey((key) => key + 1)
+  }
 
   if (isLoading) {
     return (
       <div className="dashboard-page">
-        <h1>Dashboard</h1>
-        <p className="dashboard-loading" role="status">
-          Loading dashboard...
-        </p>
+        <header className="dashboard-header">
+          <h1>Dashboard</h1>
+          <p className="dashboard-lead">
+            Track your applications and stay ahead of your deadlines.
+          </p>
+        </header>
+        <div className="dashboard-state" role="status">
+          <p className="dashboard-loading">Loading dashboard...</p>
+        </div>
       </div>
     )
   }
@@ -98,72 +135,140 @@ export function DashboardPage() {
   if (error || !stats) {
     return (
       <div className="dashboard-page">
-        <h1>Dashboard</h1>
-        <p className="dashboard-error" role="alert">
-          {error ?? 'Unable to load dashboard. Please try again.'}
-        </p>
+        <header className="dashboard-header">
+          <h1>Dashboard</h1>
+          <p className="dashboard-lead">
+            Track your applications and stay ahead of your deadlines.
+          </p>
+        </header>
+        <div className="dashboard-state dashboard-state-error" role="alert">
+          <p className="dashboard-error">
+            {error ?? 'Unable to load dashboard. Please try again.'}
+          </p>
+          <button
+            type="button"
+            className="dashboard-retry"
+            onClick={handleRetry}
+          >
+            Try again
+          </button>
+        </div>
       </div>
     )
   }
 
+  const total = stats.total_applications
+
   return (
     <div className="dashboard-page">
-      <h1>Dashboard</h1>
-
-      <section className="dashboard-section" aria-labelledby="overview-heading">
-        <h2 id="overview-heading">Overview</h2>
-        <dl className="dashboard-metrics">
-          <div>
-            <dt>Total applications</dt>
-            <dd>{stats.total_applications}</dd>
-          </div>
-          <div>
-            <dt>Applications this week</dt>
-            <dd>{stats.applications_this_week}</dd>
-          </div>
-          <div>
-            <dt>Applications this month</dt>
-            <dd>{stats.applications_this_month}</dd>
-          </div>
-        </dl>
-      </section>
-
-      <section className="dashboard-section" aria-labelledby="status-heading">
-        <h2 id="status-heading">By status</h2>
-        <dl className="dashboard-status-list">
-          {STATUS_ORDER.map((status) => (
-            <div key={status}>
-              <dt>{status}</dt>
-              <dd>{stats.by_status[status]}</dd>
-            </div>
-          ))}
-        </dl>
-      </section>
+      <header className="dashboard-header">
+        <h1>Dashboard</h1>
+        <p className="dashboard-lead">
+          Track your applications and stay ahead of your deadlines.
+        </p>
+      </header>
 
       <section
-        className="dashboard-section"
-        aria-labelledby="upcoming-heading"
+        className="dashboard-summary"
+        aria-label="Application summary"
       >
-        <h2 id="upcoming-heading">Upcoming deadlines</h2>
-        {upcoming.length === 0 ? (
-          <p className="dashboard-empty">No upcoming deadlines.</p>
-        ) : (
-          <ul className="dashboard-upcoming-list">
-            {upcoming.map((item) => (
-              <li key={item.id}>
-                <p className="upcoming-company">{item.company}</p>
-                <p className="upcoming-position">{item.position}</p>
-                <p className="upcoming-deadline">
-                  Deadline: {formatDeadline(item.deadline)}
-                </p>
-                <p className="upcoming-remaining">
-                  {formatDaysRemaining(item.days_remaining)}
-                </p>
-              </li>
-            ))}
-          </ul>
-        )}
+        <article className="summary-card">
+          <div className="summary-card-mark" aria-hidden="true" />
+          <p className="summary-label">Total Applications</p>
+          <p className="summary-value">{stats.total_applications}</p>
+        </article>
+        <article className="summary-card">
+          <div className="summary-card-mark" aria-hidden="true" />
+          <p className="summary-label">This Week</p>
+          <p className="summary-value">{stats.applications_this_week}</p>
+        </article>
+        <article className="summary-card">
+          <div className="summary-card-mark" aria-hidden="true" />
+          <p className="summary-label">This Month</p>
+          <p className="summary-value">{stats.applications_this_month}</p>
+        </article>
       </section>
+
+      <div className="dashboard-grid">
+        <section
+          className="dashboard-panel"
+          aria-labelledby="status-heading"
+        >
+          <div className="panel-header">
+            <h2 id="status-heading">Application Status</h2>
+            <p className="panel-subtitle">
+              Where every application currently stands.
+            </p>
+          </div>
+          <ul className="status-list">
+            {STATUS_ORDER.map((status) => {
+              const count = stats.by_status[status]
+              return (
+                <li key={status} className="status-row">
+                  <div className="status-row-top">
+                    <span className="status-name">
+                      {STATUS_LABELS[status]}
+                    </span>
+                    <span className="status-count">{count}</span>
+                  </div>
+                  <div
+                    className="status-bar-track"
+                    aria-hidden="true"
+                  >
+                    <div
+                      className="status-bar-fill"
+                      style={{ width: statusBarWidth(count, total) }}
+                    />
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+        </section>
+
+        <section
+          className="dashboard-panel"
+          aria-labelledby="upcoming-heading"
+        >
+          <div className="panel-header">
+            <h2 id="upcoming-heading">Upcoming Deadlines</h2>
+            <p className="panel-subtitle">
+              The next deadlines that need your attention.
+            </p>
+          </div>
+
+          {upcoming.length === 0 ? (
+            <div className="dashboard-empty">
+              <p className="dashboard-empty-title">
+                No upcoming deadlines.
+              </p>
+              <p className="dashboard-empty-copy">
+                You&apos;re all caught up. New deadlines will appear here.
+              </p>
+            </div>
+          ) : (
+            <ul className="deadline-list">
+              {upcoming.map((item) => (
+                <li
+                  key={item.id}
+                  className={`deadline-item ${urgencyClass(item.days_remaining)}`}
+                >
+                  <div className="deadline-main">
+                    <p className="upcoming-company">{item.company}</p>
+                    <p className="upcoming-position">{item.position}</p>
+                    <p className="upcoming-deadline">
+                      {formatDeadline(item.deadline)}
+                    </p>
+                  </div>
+                  <p className="upcoming-remaining">
+                    {formatDaysRemaining(item.days_remaining)}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
     </div>
   )
 }
