@@ -37,18 +37,18 @@ export async function getApplications(
 
   const suffix = query.toString()
   return apiJson<ApplicationListResponse>(
-    suffix ? `/applications?${suffix}` : '/applications',
+    suffix ? `/api/v1/applications?${suffix}` : '/api/v1/applications',
   )
 }
 
 export async function getApplication(id: number): Promise<Application> {
-  return apiJson<Application>(`/applications/${id}`)
+  return apiJson<Application>(`/api/v1/applications/${id}`)
 }
 
 export async function createApplication(
   data: ApplicationCreateRequest,
 ): Promise<Application> {
-  return apiJson<Application>('/applications', {
+  return apiJson<Application>('/api/v1/applications', {
     method: 'POST',
     body: data,
   })
@@ -58,7 +58,7 @@ export async function updateApplication(
   id: number,
   data: ApplicationUpdateRequest,
 ): Promise<Application> {
-  return apiJson<Application>(`/applications/${id}`, {
+  return apiJson<Application>(`/api/v1/applications/${id}`, {
     method: 'PATCH',
     body: data,
   })
@@ -67,11 +67,11 @@ export async function updateApplication(
 export async function getApplicationEvents(
   id: number,
 ): Promise<ApplicationEventsResponse> {
-  return apiJson<ApplicationEventsResponse>(`/applications/${id}/events`)
+  return apiJson<ApplicationEventsResponse>(`/api/v1/applications/${id}/events`)
 }
 
 export async function deleteApplication(id: number): Promise<void> {
-  await apiRequest<void>(`/applications/${id}`, {
+  await apiRequest<void>(`/api/v1/applications/${id}`, {
     method: 'DELETE',
   })
 }

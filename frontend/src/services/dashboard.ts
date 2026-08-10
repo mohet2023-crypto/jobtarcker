@@ -5,7 +5,7 @@ import type {
 } from '../types/dashboard'
 
 export async function getDashboardStats(): Promise<DashboardStats> {
-  return apiJson<DashboardStats>('/dashboard')
+  return apiJson<DashboardStats>('/api/v1/dashboard')
 }
 
 export async function getUpcomingDeadlines(
@@ -13,6 +13,6 @@ export async function getUpcomingDeadlines(
 ): Promise<UpcomingDeadlinesResponse> {
   const params = new URLSearchParams({ limit: String(limit) })
   return apiJson<UpcomingDeadlinesResponse>(
-    `/dashboard/upcoming?${params.toString()}`,
+    `/api/v1/dashboard/upcoming?${params.toString()}`,
   )
 }

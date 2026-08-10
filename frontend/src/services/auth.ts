@@ -8,7 +8,7 @@ import type {
 export async function registerUser(
   data: RegisterRequest,
 ): Promise<UserResponse> {
-  return apiJson<UserResponse>('/auth/register', {
+  return apiJson<UserResponse>('/api/v1/auth/register', {
     method: 'POST',
     body: data,
     auth: false,
@@ -23,7 +23,7 @@ export async function loginUser(
   body.set('username', email)
   body.set('password', password)
 
-  return apiRequest<TokenResponse>('/auth/login', {
+  return apiRequest<TokenResponse>('/api/v1/auth/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -35,5 +35,5 @@ export async function loginUser(
 }
 
 export async function getCurrentUser(): Promise<UserResponse> {
-  return apiJson<UserResponse>('/auth/me')
+  return apiJson<UserResponse>('/api/v1/auth/me')
 }
