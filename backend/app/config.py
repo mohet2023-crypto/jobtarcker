@@ -67,6 +67,16 @@ def get_database_url() -> str:
             "Copy backend/.env.example to backend/.env and configure it, "
             "or export DATABASE_URL."
         )
+
+    # Managed providers often supply postgres:// or postgresql:// URLs.
+    # SQLAlchemy + psycopg v3 needs the postgresql+psycopg scheme.
+    if database_url.startswith("postgres://"):
+        database_url = "postgresql+psycopg://" + database_url[len("postgres://") :]
+    elif database_url.startswith("postgresql://"):
+        database_url = (
+            "postgresql+psycopg://" + database_url[len("postgresql://") :]
+        )
+
     return database_url
 
 
