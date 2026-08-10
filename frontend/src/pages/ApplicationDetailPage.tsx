@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 
+import { DeleteApplicationModal } from '../components/DeleteApplicationModal'
 import { EditApplicationModal } from '../components/EditApplicationModal'
 import { StatusBadge } from '../components/StatusBadge'
 import { ApiError } from '../services/api'
@@ -70,6 +71,7 @@ function TimelineItem({ event }: { event: ApplicationEvent }) {
 }
 
 export function ApplicationDetailPage() {
+  const navigate = useNavigate()
   const { id: idParam } = useParams()
   const applicationId = Number(idParam)
 
@@ -80,6 +82,7 @@ export function ApplicationDetailPage() {
   const [isNotFound, setIsNotFound] = useState(false)
   const [timelineError, setTimelineError] = useState<string | null>(null)
   const [isEditOpen, setIsEditOpen] = useState(false)
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
@@ -153,6 +156,10 @@ export function ApplicationDetailPage() {
     setReloadKey((key) => key + 1)
   }
 
+  function handleDeleted() {
+    navigate('/applications')
+  }
+
   if (isLoading) {
     return (
       <div className="detail-page">
@@ -213,13 +220,22 @@ export function ApplicationDetailPage() {
             <StatusBadge status={application.status} />
           </div>
         </div>
-        <button
-          type="button"
-          className="detail-edit"
-          onClick={() => setIsEditOpen(true)}
-        >
-          Edit
-        </button>
+        <div className="detail-header-actions">
+          <button
+            type="button"
+            className="detail-edit"
+            onClick={() => setIsEditOpen(true)}
+          >
+            Edit
+          </button>
+          <button
+            type="button"
+            className="detail-delete"
+            onClick={() => setIsDeleteOpen(true)}
+          >
+            Delete Application
+          </button>
+        </div>
       </header>
 
       <div className="detail-layout">
@@ -301,6 +317,14 @@ export function ApplicationDetailPage() {
         application={application}
         onClose={() => setIsEditOpen(false)}
         onUpdated={handleUpdated}
+      />
+
+      <DeleteApplicationModal
+        open={isDeleteOpen}
+        applicationId={application.id}
+        company={application.company}
+        onClose={() => setIsDeleteOpen(false)}
+        onDeleted={handleDeleted}
       />
     </div>
   )

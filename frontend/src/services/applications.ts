@@ -1,4 +1,4 @@
-import { apiJson } from './api'
+import { apiJson, apiRequest } from './api'
 import type {
   Application,
   ApplicationCreateRequest,
@@ -68,4 +68,10 @@ export async function getApplicationEvents(
   id: number,
 ): Promise<ApplicationEventsResponse> {
   return apiJson<ApplicationEventsResponse>(`/applications/${id}/events`)
+}
+
+export async function deleteApplication(id: number): Promise<void> {
+  await apiRequest<void>(`/applications/${id}`, {
+    method: 'DELETE',
+  })
 }

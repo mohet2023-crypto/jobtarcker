@@ -1031,9 +1031,35 @@ a:hover {
 }
 
 .modal-primary:disabled,
-.modal-secondary:disabled {
+.modal-secondary:disabled,
+.modal-danger:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.modal-danger {
+  border: 1px solid #8a2f22;
+  background: #8a2f22;
+  color: #fff8f5;
+  padding: 0.65rem 1rem;
+  border-radius: 0.4rem;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.modal-danger:hover:not(:disabled) {
+  background: #72261c;
+}
+
+.modal-dialog-compact {
+  max-width: 28rem;
+}
+
+.delete-confirm-copy {
+  margin: 0;
+  color: #57534e;
+  line-height: 1.5;
 }
 
 @media (max-width: 600px) {
@@ -1101,6 +1127,13 @@ a:hover {
   align-items: center;
 }
 
+.detail-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  flex-shrink: 0;
+}
+
 .detail-edit {
   flex-shrink: 0;
   padding: 0.65rem 1.1rem;
@@ -1115,6 +1148,22 @@ a:hover {
 
 .detail-edit:hover {
   background: #0b3a46;
+}
+
+.detail-delete {
+  flex-shrink: 0;
+  padding: 0.65rem 1.1rem;
+  border: 1px solid #8a2f22;
+  border-radius: 0.4rem;
+  background: #fffdf9;
+  color: #8a2f22;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.detail-delete:hover {
+  background: #fdf2f0;
 }
 
 .detail-layout {
@@ -1309,7 +1358,12 @@ a:hover {
     flex-direction: column;
   }
 
-  .detail-edit {
+  .detail-header-actions {
+    width: 100%;
+  }
+
+  .detail-edit,
+  .detail-delete {
     width: 100%;
   }
 
