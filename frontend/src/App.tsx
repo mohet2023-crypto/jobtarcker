@@ -15,10 +15,7 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <div className="app-shell">
-          <header className="app-header">
-            <p className="brand">Deadline Dash</p>
-            <Navigation />
-          </header>
+          <Navigation />
           <main className="app-main">
             <Routes>
               <Route path="/" element={<HomePage />} />
