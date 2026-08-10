@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 
 import { ApiError } from '../services/api'
 import { deleteApplication } from '../services/applications'
@@ -19,6 +19,9 @@ export function DeleteApplicationModal({
   onDeleted,
 }: DeleteApplicationModalProps) {
   const titleId = useId()
+  const descriptionId = useId()
+  const errorId = useId()
+  const cancelRef = useRef<HTMLButtonElement>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -29,6 +32,12 @@ export function DeleteApplicationModal({
 
     setIsDeleting(false)
     setError(null)
+
+    const frame = window.requestAnimationFrame(() => {
+      cancelRef.current?.focus()
+    })
+
+    return () => window.cancelAnimationFrame(frame)
   }, [open])
 
   useEffect(() => {
@@ -48,6 +57,12 @@ export function DeleteApplicationModal({
 
   if (!open) {
     return null
+  }
+
+  function handleClose() {
+    if (!isDeleting) {
+      onClose()
+    }
   }
 
   async function handleConfirm() {
@@ -72,19 +87,29 @@ export function DeleteApplicationModal({
   }
 
   return (
-    <div className="modal-overlay" role="presentation">
+    <div
+      className="modal-overlay"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          handleClose()
+        }
+      }}
+    >
       <div
         className="modal-dialog modal-dialog-compact"
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
+        aria-describedby={error ? `${descriptionId} ${errorId}` : descriptionId}
+        aria-busy={isDeleting}
       >
         <div className="modal-header">
           <h2 id={titleId}>Delete this application?</h2>
           <button
             type="button"
             className="modal-close"
-            onClick={onClose}
+            onClick={handleClose}
             disabled={isDeleting}
             aria-label="Close"
           >
@@ -93,22 +118,23 @@ export function DeleteApplicationModal({
         </div>
 
         <div className="modal-form">
-          <p className="delete-confirm-copy">
+          <p id={descriptionId} className="delete-confirm-copy">
             This will permanently delete <strong>{company}</strong>. This action
             cannot be undone.
           </p>
 
           {error ? (
-            <p className="modal-error" role="alert">
+            <p id={errorId} className="modal-error" role="alert">
               {error}
             </p>
           ) : null}
 
           <div className="modal-actions">
             <button
+              ref={cancelRef}
               type="button"
               className="modal-secondary"
-              onClick={onClose}
+              onClick={handleClose}
               disabled={isDeleting}
             >
               Cancel
@@ -121,7 +147,7 @@ export function DeleteApplicationModal({
               }}
               disabled={isDeleting}
             >
-              {isDeleting ? 'Deleting...' : 'Delete Application'}
+              {isDeleting ? 'Deleting…' : 'Delete Application'}
             </button>
           </div>
         </div>

@@ -50,17 +50,39 @@ function TimelineItem({ event }: { event: ApplicationEvent }) {
 
         {event.event_type === 'CREATED' && event.to_status ? (
           <p className="timeline-meta">
-            Status: {statusLabel(event.to_status)}
+            <span className="timeline-meta-label">Status</span>
+            <StatusBadge status={event.to_status} />
           </p>
         ) : null}
 
         {event.event_type === 'STATUS_CHANGED' ? (
-          <p className="timeline-meta">
-            {statusLabel(event.from_status)} → {statusLabel(event.to_status)}
+          <p className="timeline-meta timeline-meta-change">
+            <span className="timeline-status-pair">
+              {event.from_status ? (
+                <StatusBadge status={event.from_status} />
+              ) : (
+                <span>{statusLabel(event.from_status)}</span>
+              )}
+              <span className="timeline-arrow" aria-hidden="true">
+                →
+              </span>
+              {event.to_status ? (
+                <StatusBadge status={event.to_status} />
+              ) : (
+                <span>{statusLabel(event.to_status)}</span>
+              )}
+            </span>
+            <span className="visually-hidden">
+              {statusLabel(event.from_status)} to {statusLabel(event.to_status)}
+            </span>
           </p>
         ) : null}
 
-        <p className="timeline-time">{formatDateTime(event.occurred_at)}</p>
+        <p className="timeline-time">
+          <time dateTime={event.occurred_at}>
+            {formatDateTime(event.occurred_at)}
+          </time>
+        </p>
 
         {event.notes ? (
           <p className="timeline-notes">{event.notes}</p>
@@ -166,8 +188,14 @@ export function ApplicationDetailPage() {
         <Link to="/applications" className="detail-back">
           ← Back to Applications
         </Link>
-        <div className="detail-state" role="status">
-          <p>Loading application...</p>
+        <div
+          className="detail-state detail-state-loading"
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+        >
+          <p className="detail-state-title">Loading application…</p>
+          <p>Fetching details and timeline.</p>
         </div>
       </div>
     )
@@ -176,8 +204,15 @@ export function ApplicationDetailPage() {
   if (isNotFound) {
     return (
       <div className="detail-page">
+        <Link to="/applications" className="detail-back">
+          ← Back to Applications
+        </Link>
         <div className="detail-state">
-          <p className="detail-state-title">Application not found.</p>
+          <p className="detail-state-title">Application not found</p>
+          <p>
+            This application may have been deleted, or the link may be
+            incorrect.
+          </p>
           <Link to="/applications" className="detail-back-button">
             Back to Applications
           </Link>
@@ -193,6 +228,7 @@ export function ApplicationDetailPage() {
           ← Back to Applications
         </Link>
         <div className="detail-state detail-state-error" role="alert">
+          <p className="detail-state-title">Something went wrong</p>
           <p>{error ?? 'Unable to load application. Please try again.'}</p>
           <button
             type="button"
@@ -208,9 +244,11 @@ export function ApplicationDetailPage() {
 
   return (
     <div className="detail-page">
-      <Link to="/applications" className="detail-back">
-        ← Back to Applications
-      </Link>
+      <nav className="detail-nav" aria-label="Application navigation">
+        <Link to="/applications" className="detail-back">
+          ← Back to Applications
+        </Link>
+      </nav>
 
       <header className="detail-header">
         <div className="detail-header-main">
@@ -226,7 +264,7 @@ export function ApplicationDetailPage() {
             className="detail-edit"
             onClick={() => setIsEditOpen(true)}
           >
-            Edit
+            Edit Application
           </button>
           <button
             type="button"
@@ -245,24 +283,20 @@ export function ApplicationDetailPage() {
         >
           <h2 id="application-details-heading">Application Details</h2>
           <dl className="detail-list">
-            {application.location ? (
-              <DetailRow label="Location">{application.location}</DetailRow>
-            ) : null}
-            {application.salary ? (
-              <DetailRow label="Salary">{application.salary}</DetailRow>
-            ) : null}
-            {application.applied_at ? (
-              <DetailRow label="Applied">
-                {formatDate(application.applied_at)}
-              </DetailRow>
-            ) : null}
-            {application.deadline ? (
-              <DetailRow label="Deadline">
-                {formatDate(application.deadline)}
-              </DetailRow>
-            ) : null}
-            {application.job_url ? (
-              <DetailRow label="Job URL">
+            <DetailRow label="Location">
+              {application.location || '—'}
+            </DetailRow>
+            <DetailRow label="Salary">{application.salary || '—'}</DetailRow>
+            <DetailRow label="Applied">
+              {application.applied_at
+                ? formatDate(application.applied_at)
+                : '—'}
+            </DetailRow>
+            <DetailRow label="Deadline">
+              {application.deadline ? formatDate(application.deadline) : '—'}
+            </DetailRow>
+            <DetailRow label="Job URL">
+              {application.job_url ? (
                 <a
                   href={application.job_url}
                   target="_blank"
@@ -270,13 +304,17 @@ export function ApplicationDetailPage() {
                 >
                   View job posting
                 </a>
-              </DetailRow>
-            ) : null}
-            {application.notes ? (
-              <DetailRow label="Notes">
+              ) : (
+                '—'
+              )}
+            </DetailRow>
+            <DetailRow label="Notes">
+              {application.notes ? (
                 <span className="detail-notes">{application.notes}</span>
-              </DetailRow>
-            ) : null}
+              ) : (
+                '—'
+              )}
+            </DetailRow>
             <DetailRow label="Created">
               {formatDateTime(application.created_at)}
             </DetailRow>
@@ -291,6 +329,9 @@ export function ApplicationDetailPage() {
           aria-labelledby="application-timeline-heading"
         >
           <h2 id="application-timeline-heading">Application Timeline</h2>
+          <p className="detail-panel-lead">
+            Automatic history of this application's progress.
+          </p>
 
           {timelineError ? (
             <p className="timeline-error" role="alert">

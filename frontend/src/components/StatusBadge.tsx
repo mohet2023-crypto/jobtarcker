@@ -8,9 +8,14 @@ type StatusBadgeProps = {
 }
 
 export function StatusBadge({ status }: StatusBadgeProps) {
+  const label = APPLICATION_STATUS_LABELS[status]
+
   return (
-    <span className={`status-badge status-${status.toLowerCase()}`}>
-      {APPLICATION_STATUS_LABELS[status]}
+    <span
+      className={`status-badge status-${status.toLowerCase()}`}
+      title={label}
+    >
+      {label}
     </span>
   )
 }

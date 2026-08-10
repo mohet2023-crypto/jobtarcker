@@ -54,6 +54,7 @@ export function EditApplicationModal({
   onUpdated,
 }: EditApplicationModalProps) {
   const titleId = useId()
+  const errorId = useId()
   const companyRef = useRef<HTMLInputElement>(null)
   const [form, setForm] = useState<FormState>(() =>
     formFromApplication(application),
@@ -100,6 +101,12 @@ export function EditApplicationModal({
 
   function updateField<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((current) => ({ ...current, [key]: value }))
+  }
+
+  function handleClose() {
+    if (!isSubmitting) {
+      onClose()
+    }
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -150,20 +157,32 @@ export function EditApplicationModal({
     }
   }
 
+  const formError = validationError ?? submitError
+
   return (
-    <div className="modal-overlay" role="presentation">
+    <div
+      className="modal-overlay"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          handleClose()
+        }
+      }}
+    >
       <div
         className="modal-dialog"
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
+        aria-describedby={formError ? errorId : undefined}
+        aria-busy={isSubmitting}
       >
         <div className="modal-header">
           <h2 id={titleId}>Edit Application</h2>
           <button
             type="button"
             className="modal-close"
-            onClick={onClose}
+            onClick={handleClose}
             disabled={isSubmitting}
             aria-label="Close"
           >
@@ -172,11 +191,11 @@ export function EditApplicationModal({
         </div>
 
         <form className="modal-form" onSubmit={handleSubmit} noValidate>
-          {(validationError || submitError) && (
-            <p className="modal-error" role="alert">
-              {validationError ?? submitError}
+          {formError ? (
+            <p id={errorId} className="modal-error" role="alert">
+              {formError}
             </p>
-          )}
+          ) : null}
 
           <div className="modal-grid">
             <label className="applications-field">
@@ -297,7 +316,7 @@ export function EditApplicationModal({
             <button
               type="button"
               className="modal-secondary"
-              onClick={onClose}
+              onClick={handleClose}
               disabled={isSubmitting}
             >
               Cancel
@@ -307,7 +326,7 @@ export function EditApplicationModal({
               className="modal-primary"
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Saving...' : 'Save Changes'}
+              {isSubmitting ? 'Saving…' : 'Save Changes'}
             </button>
           </div>
         </form>

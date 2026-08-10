@@ -18,6 +18,14 @@ import { formatDate } from '../utils/datetime'
 const PAGE_SIZE = 20
 const DEBOUNCE_MS = 350
 
+const SORT_LABELS: Record<ApplicationSortBy, string> = {
+  created_at: 'Newest',
+  deadline: 'Deadline',
+  company: 'Company',
+  position: 'Position',
+  status: 'Status',
+}
+
 function ApplicationIdentity({ application }: { application: Application }) {
   return (
     <Link
@@ -129,6 +137,16 @@ export function ApplicationsPage() {
     setPage(1)
   }
 
+  function handleClearFilters() {
+    setIsLoading(true)
+    setSearchInput('')
+    setDebouncedSearch('')
+    setLocationInput('')
+    setDebouncedLocation('')
+    setStatus('')
+    setPage(1)
+  }
+
   function handleRetry() {
     setReloadKey((key) => key + 1)
   }
@@ -142,6 +160,8 @@ export function ApplicationsPage() {
   const currentPage = data?.page ?? page
   const items = data?.items ?? []
   const total = data?.total ?? 0
+  const canGoPrevious = !isLoading && currentPage > 1
+  const canGoNext = !isLoading && totalPages > 0 && currentPage < totalPages
 
   return (
     <div className="applications-page">
@@ -150,7 +170,7 @@ export function ApplicationsPage() {
           <div>
             <h1>Applications</h1>
             <p className="applications-lead">
-              Track and manage your job applications.
+              Track and manage your job applications in one place.
             </p>
           </div>
           <button
@@ -169,14 +189,15 @@ export function ApplicationsPage() {
         onCreated={handleCreated}
       />
 
-      <section className="applications-toolbar" aria-label="Filters">
+      <section className="applications-toolbar" aria-label="Search and filters">
         <label className="applications-field applications-search">
-          <span className="visually-hidden">Search applications</span>
+          <span className="field-label">Search</span>
           <input
             type="search"
             value={searchInput}
             onChange={(event) => setSearchInput(event.target.value)}
             placeholder="Search company or position..."
+            autoComplete="off"
           />
         </label>
 
@@ -200,6 +221,7 @@ export function ApplicationsPage() {
               value={locationInput}
               onChange={(event) => setLocationInput(event.target.value)}
               placeholder="Filter by location..."
+              autoComplete="off"
             />
           </label>
 
@@ -222,11 +244,49 @@ export function ApplicationsPage() {
             </select>
           </label>
         </div>
+
+        {hasActiveFilters ? (
+          <div className="applications-active-filters">
+            <p className="applications-active-label">Active filters</p>
+            <ul className="applications-filter-chips">
+              {debouncedSearch ? (
+                <li className="applications-filter-chip">
+                  Search: {debouncedSearch}
+                </li>
+              ) : null}
+              {status ? (
+                <li className="applications-filter-chip">
+                  Status: {APPLICATION_STATUS_LABELS[status]}
+                </li>
+              ) : null}
+              {debouncedLocation ? (
+                <li className="applications-filter-chip">
+                  Location: {debouncedLocation}
+                </li>
+              ) : null}
+            </ul>
+            <button
+              type="button"
+              className="applications-clear-filters"
+              onClick={handleClearFilters}
+            >
+              Clear filters
+            </button>
+          </div>
+        ) : null}
       </section>
 
       {isLoading ? (
-        <div className="applications-state" role="status">
-          <p>Loading applications...</p>
+        <div
+          className="applications-state applications-state-loading"
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+        >
+          <p className="applications-empty-title">Loading applications…</p>
+          <p className="applications-empty-copy">
+            Fetching your latest applications.
+          </p>
         </div>
       ) : null}
 
@@ -235,6 +295,7 @@ export function ApplicationsPage() {
           className="applications-state applications-state-error"
           role="alert"
         >
+          <p className="applications-empty-title">Something went wrong</p>
           <p>{error}</p>
           <button
             type="button"
@@ -248,28 +309,51 @@ export function ApplicationsPage() {
 
       {!isLoading && !error && total === 0 && !hasActiveFilters ? (
         <div className="applications-state applications-empty">
-          <p className="applications-empty-title">No applications yet.</p>
+          <p className="applications-empty-title">No applications yet</p>
           <p className="applications-empty-copy">
-            Start tracking your job applications to keep everything organized.
+            Add your first application to start tracking deadlines, status, and
+            progress.
           </p>
+          <button
+            type="button"
+            className="applications-add applications-empty-action"
+            onClick={() => setIsCreateOpen(true)}
+          >
+            + Add Application
+          </button>
         </div>
       ) : null}
 
       {!isLoading && !error && total === 0 && hasActiveFilters ? (
         <div className="applications-state applications-empty">
-          <p className="applications-empty-title">No applications found.</p>
+          <p className="applications-empty-title">No matching applications</p>
           <p className="applications-empty-copy">
-            Try adjusting your search or filters.
+            Nothing matches your current search or filters. Try adjusting them,
+            or clear filters to see everything again.
           </p>
+          <button
+            type="button"
+            className="applications-clear-filters applications-empty-action"
+            onClick={handleClearFilters}
+          >
+            Clear filters
+          </button>
         </div>
       ) : null}
 
       {!isLoading && !error && items.length > 0 ? (
         <>
-          <p className="applications-meta">
-            Showing {items.length} of {total}{' '}
-            {total === 1 ? 'application' : 'applications'}
-          </p>
+          <div className="applications-results-header">
+            <p className="applications-meta">
+              Showing {items.length} of {total}{' '}
+              {total === 1 ? 'application' : 'applications'}
+              {hasActiveFilters ? ' matching your filters' : ''}
+            </p>
+            <p className="applications-sort-meta">
+              Sorted by {SORT_LABELS[sortBy]} (
+              {sortOrder === 'desc' ? 'descending' : 'ascending'})
+            </p>
+          </div>
 
           <div className="applications-table-wrap">
             <table className="applications-table">
@@ -284,7 +368,7 @@ export function ApplicationsPage() {
               </thead>
               <tbody>
                 {items.map((application) => (
-                  <tr key={application.id}>
+                  <tr key={application.id} className="applications-table-row">
                     <td>
                       <ApplicationIdentity application={application} />
                     </td>
@@ -303,21 +387,27 @@ export function ApplicationsPage() {
           <ul className="applications-card-list">
             {items.map((application) => (
               <li key={application.id} className="application-card">
-                <ApplicationIdentity application={application} />
-                <div className="application-card-meta">
-                  <StatusBadge status={application.status} />
-                  <span>{application.location || 'No location'}</span>
-                </div>
-                <dl className="application-card-dates">
-                  <div>
-                    <dt>Deadline</dt>
-                    <dd>{formatDate(application.deadline)}</dd>
+                <Link
+                  to={`/applications/${application.id}`}
+                  className="application-card-link"
+                >
+                  <span className="app-company">{application.company}</span>
+                  <span className="app-position">{application.position}</span>
+                  <div className="application-card-meta">
+                    <StatusBadge status={application.status} />
+                    <span>{application.location || 'No location'}</span>
                   </div>
-                  <div>
-                    <dt>Applied</dt>
-                    <dd>{formatDate(application.applied_at)}</dd>
-                  </div>
-                </dl>
+                  <dl className="application-card-dates">
+                    <div>
+                      <dt>Deadline</dt>
+                      <dd>{formatDate(application.deadline)}</dd>
+                    </div>
+                    <div>
+                      <dt>Applied</dt>
+                      <dd>{formatDate(application.applied_at)}</dd>
+                    </div>
+                  </dl>
+                </Link>
               </li>
             ))}
           </ul>
@@ -328,11 +418,11 @@ export function ApplicationsPage() {
                 type="button"
                 className="pagination-button"
                 onClick={() => setPage((current) => Math.max(1, current - 1))}
-                disabled={currentPage <= 1}
+                disabled={!canGoPrevious}
               >
                 Previous
               </button>
-              <p className="pagination-status">
+              <p className="pagination-status" aria-live="polite">
                 Page {currentPage} of {totalPages}
               </p>
               <button
@@ -345,7 +435,7 @@ export function ApplicationsPage() {
                       : Math.min(totalPages, current + 1),
                   )
                 }
-                disabled={currentPage >= totalPages}
+                disabled={!canGoNext}
               >
                 Next
               </button>
