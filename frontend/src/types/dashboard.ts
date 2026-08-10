@@ -1,11 +1,6 @@
-export type ApplicationStatus =
-  | 'SAVED'
-  | 'APPLIED'
-  | 'SCREENING'
-  | 'INTERVIEW'
-  | 'OFFER'
-  | 'REJECTED'
-  | 'WITHDRAWN'
+import type { ApplicationStatus } from './application'
+
+export type { ApplicationStatus }
 
 export type StatusCounts = {
   SAVED: number
