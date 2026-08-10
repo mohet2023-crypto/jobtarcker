@@ -7,7 +7,6 @@ import { getApplications } from '../services/applications'
 import {
   APPLICATION_STATUS_LABELS,
   APPLICATION_STATUS_ORDER,
-  type Application,
   type ApplicationListResponse,
   type ApplicationSortBy,
   type ApplicationSortOrder,
@@ -26,15 +25,67 @@ const SORT_LABELS: Record<ApplicationSortBy, string> = {
   status: 'Status',
 }
 
-function ApplicationIdentity({ application }: { application: Application }) {
+type DeadlineDisplay = {
+  label: string
+  urgency: 'none' | 'today' | 'soon' | 'normal'
+}
+
+function startOfLocalDay(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate())
+}
+
+function formatDeadlineDisplay(value: string | null): DeadlineDisplay {
+  if (!value) {
+    return { label: '—', urgency: 'none' }
+  }
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return { label: value, urgency: 'normal' }
+  }
+
+  const today = startOfLocalDay(new Date())
+  const target = startOfLocalDay(date)
+  const days = Math.round(
+    (target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+  )
+
+  if (days === 0) {
+    return { label: 'Today', urgency: 'today' }
+  }
+  if (days === 1) {
+    return { label: 'Tomorrow', urgency: 'soon' }
+  }
+  if (days > 1 && days <= 3) {
+    return { label: `${days} days`, urgency: 'soon' }
+  }
+
+  return {
+    label: date.toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    }),
+    urgency: 'normal',
+  }
+}
+
+function ApplicationsSkeleton() {
   return (
-    <Link
-      to={`/applications/${application.id}`}
-      className="app-identity-link"
+    <div
+      className="applications-skeleton"
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
     >
-      <span className="app-company">{application.company}</span>
-      <span className="app-position">{application.position}</span>
-    </Link>
+      <span className="visually-hidden">Loading applications…</span>
+      <div className="applications-skeleton-toolbar" />
+      <div className="applications-skeleton-table">
+        {Array.from({ length: 5 }, (_, index) => (
+          <div key={index} className="applications-skeleton-row" />
+        ))}
+      </div>
+    </div>
   )
 }
 
@@ -162,20 +213,24 @@ export function ApplicationsPage() {
   const total = data?.total ?? 0
   const canGoPrevious = !isLoading && currentPage > 1
   const canGoNext = !isLoading && totalPages > 0 && currentPage < totalPages
+  const rangeStart = total === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1
+  const rangeEnd = Math.min(currentPage * PAGE_SIZE, total)
 
   return (
     <div className="applications-page">
       <header className="applications-header">
         <div className="applications-header-row">
-          <div>
-            <h1>Applications</h1>
+          <div className="applications-header-copy">
+            <p className="applications-eyebrow">Applications</p>
+            <h1>Your applications</h1>
             <p className="applications-lead">
-              Track and manage your job applications in one place.
+              Track every opportunity, keep deadlines visible, and stay
+              organized throughout your job search.
             </p>
           </div>
           <button
             type="button"
-            className="applications-add"
+            className="btn btn-primary applications-add"
             onClick={() => setIsCreateOpen(true)}
           >
             + Add Application
@@ -189,19 +244,45 @@ export function ApplicationsPage() {
         onCreated={handleCreated}
       />
 
-      <section className="applications-toolbar" aria-label="Search and filters">
-        <label className="applications-field applications-search">
-          <span className="field-label">Search</span>
-          <input
-            type="search"
-            value={searchInput}
-            onChange={(event) => setSearchInput(event.target.value)}
-            placeholder="Search company or position..."
-            autoComplete="off"
-          />
-        </label>
+      {!isLoading && !error ? (
+        <div className="applications-summary" aria-live="polite">
+          {total === 0 ? (
+            <span>No applications yet</span>
+          ) : (
+            <>
+              <span>
+                {total} {total === 1 ? 'application' : 'applications'}
+              </span>
+              {totalPages > 0 ? (
+                <span>
+                  Page {currentPage} of {totalPages}
+                </span>
+              ) : null}
+              <span>
+                Showing {rangeStart}–{rangeEnd}
+              </span>
+            </>
+          )}
+          <span className="applications-summary-sort">
+            Sorted by {SORT_LABELS[sortBy]} (
+            {sortOrder === 'desc' ? 'descending' : 'ascending'})
+          </span>
+        </div>
+      ) : null}
 
-        <div className="applications-filters">
+      <section className="applications-toolbar" aria-label="Search and filters">
+        <div className="applications-toolbar-grid">
+          <label className="applications-field applications-search">
+            <span className="field-label">Search</span>
+            <input
+              type="search"
+              value={searchInput}
+              onChange={(event) => setSearchInput(event.target.value)}
+              placeholder="Search company or position..."
+              autoComplete="off"
+            />
+          </label>
+
           <label className="applications-field">
             <span className="field-label">Status</span>
             <select value={status} onChange={handleStatusChange}>
@@ -243,63 +324,35 @@ export function ApplicationsPage() {
               <option value="asc">Ascending</option>
             </select>
           </label>
-        </div>
 
-        {hasActiveFilters ? (
-          <div className="applications-active-filters">
-            <p className="applications-active-label">Active filters</p>
-            <ul className="applications-filter-chips">
-              {debouncedSearch ? (
-                <li className="applications-filter-chip">
-                  Search: {debouncedSearch}
-                </li>
-              ) : null}
-              {status ? (
-                <li className="applications-filter-chip">
-                  Status: {APPLICATION_STATUS_LABELS[status]}
-                </li>
-              ) : null}
-              {debouncedLocation ? (
-                <li className="applications-filter-chip">
-                  Location: {debouncedLocation}
-                </li>
-              ) : null}
-            </ul>
-            <button
-              type="button"
-              className="applications-clear-filters"
-              onClick={handleClearFilters}
-            >
-              Clear filters
-            </button>
-          </div>
-        ) : null}
+          {hasActiveFilters ? (
+            <div className="applications-toolbar-actions">
+              <button
+                type="button"
+                className="btn btn-secondary applications-clear-filters"
+                onClick={handleClearFilters}
+              >
+                Clear filters
+              </button>
+            </div>
+          ) : null}
+        </div>
       </section>
 
-      {isLoading ? (
-        <div
-          className="applications-state applications-state-loading"
-          role="status"
-          aria-live="polite"
-          aria-busy="true"
-        >
-          <p className="applications-empty-title">Loading applications…</p>
-          <p className="applications-empty-copy">
-            Fetching your latest applications.
-          </p>
-        </div>
-      ) : null}
+      {isLoading ? <ApplicationsSkeleton /> : null}
 
       {!isLoading && error ? (
         <div
           className="applications-state applications-state-error"
           role="alert"
         >
-          <p className="applications-empty-title">Something went wrong</p>
-          <p>{error}</p>
+          <p className="applications-empty-title">
+            Couldn&apos;t load your applications
+          </p>
+          <p className="applications-empty-copy">{error}</p>
           <button
             type="button"
-            className="applications-retry"
+            className="btn btn-primary applications-retry"
             onClick={handleRetry}
           >
             Try again
@@ -309,14 +362,15 @@ export function ApplicationsPage() {
 
       {!isLoading && !error && total === 0 && !hasActiveFilters ? (
         <div className="applications-state applications-empty">
-          <p className="applications-empty-title">No applications yet</p>
+          <p className="applications-empty-title">
+            Your job search starts here
+          </p>
           <p className="applications-empty-copy">
-            Add your first application to start tracking deadlines, status, and
-            progress.
+            Add your first application to start tracking opportunities.
           </p>
           <button
             type="button"
-            className="applications-add applications-empty-action"
+            className="btn btn-primary applications-empty-action"
             onClick={() => setIsCreateOpen(true)}
           >
             + Add Application
@@ -326,14 +380,13 @@ export function ApplicationsPage() {
 
       {!isLoading && !error && total === 0 && hasActiveFilters ? (
         <div className="applications-state applications-empty">
-          <p className="applications-empty-title">No matching applications</p>
+          <p className="applications-empty-title">No applications found</p>
           <p className="applications-empty-copy">
-            Nothing matches your current search or filters. Try adjusting them,
-            or clear filters to see everything again.
+            Try adjusting your search or filters.
           </p>
           <button
             type="button"
-            className="applications-clear-filters applications-empty-action"
+            className="btn btn-secondary applications-empty-action"
             onClick={handleClearFilters}
           >
             Clear filters
@@ -343,73 +396,115 @@ export function ApplicationsPage() {
 
       {!isLoading && !error && items.length > 0 ? (
         <>
-          <div className="applications-results-header">
-            <p className="applications-meta">
-              Showing {items.length} of {total}{' '}
-              {total === 1 ? 'application' : 'applications'}
-              {hasActiveFilters ? ' matching your filters' : ''}
-            </p>
-            <p className="applications-sort-meta">
-              Sorted by {SORT_LABELS[sortBy]} (
-              {sortOrder === 'desc' ? 'descending' : 'ascending'})
-            </p>
-          </div>
-
           <div className="applications-table-wrap">
             <table className="applications-table">
               <thead>
                 <tr>
-                  <th scope="col">Company / Position</th>
-                  <th scope="col">Status</th>
+                  <th scope="col">Company</th>
+                  <th scope="col">Position</th>
                   <th scope="col">Location</th>
+                  <th scope="col">Status</th>
                   <th scope="col">Deadline</th>
                   <th scope="col">Applied</th>
+                  <th scope="col">
+                    <span className="visually-hidden">Actions</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {items.map((application) => (
-                  <tr key={application.id} className="applications-table-row">
-                    <td>
-                      <ApplicationIdentity application={application} />
-                    </td>
-                    <td>
-                      <StatusBadge status={application.status} />
-                    </td>
-                    <td>{application.location || '—'}</td>
-                    <td>{formatDate(application.deadline)}</td>
-                    <td>{formatDate(application.applied_at)}</td>
-                  </tr>
-                ))}
+                {items.map((application) => {
+                  const deadline = formatDeadlineDisplay(application.deadline)
+                  return (
+                    <tr key={application.id} className="applications-table-row">
+                      <td>
+                        <Link
+                          to={`/applications/${application.id}`}
+                          className="app-company-link"
+                        >
+                          {application.company}
+                        </Link>
+                      </td>
+                      <td>
+                        <span className="app-position-cell">
+                          {application.position}
+                        </span>
+                      </td>
+                      <td className="app-muted-cell">
+                        {application.location || '—'}
+                      </td>
+                      <td>
+                        <StatusBadge status={application.status} />
+                      </td>
+                      <td>
+                        <span
+                          className={`deadline-cell deadline-${deadline.urgency}`}
+                        >
+                          {deadline.label}
+                        </span>
+                      </td>
+                      <td className="app-muted-cell">
+                        {formatDate(application.applied_at)}
+                      </td>
+                      <td className="app-actions-cell">
+                        <Link
+                          to={`/applications/${application.id}`}
+                          className="app-view-link"
+                        >
+                          View
+                        </Link>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
 
           <ul className="applications-card-list">
-            {items.map((application) => (
-              <li key={application.id} className="application-card">
-                <Link
-                  to={`/applications/${application.id}`}
-                  className="application-card-link"
-                >
-                  <span className="app-company">{application.company}</span>
-                  <span className="app-position">{application.position}</span>
-                  <div className="application-card-meta">
-                    <StatusBadge status={application.status} />
-                    <span>{application.location || 'No location'}</span>
-                  </div>
-                  <dl className="application-card-dates">
-                    <div>
-                      <dt>Deadline</dt>
-                      <dd>{formatDate(application.deadline)}</dd>
+            {items.map((application) => {
+              const deadline = formatDeadlineDisplay(application.deadline)
+              return (
+                <li key={application.id} className="application-card">
+                  <Link
+                    to={`/applications/${application.id}`}
+                    className="application-card-link"
+                  >
+                    <div className="application-card-top">
+                      <div className="application-card-identity">
+                        <span className="app-company">
+                          {application.company}
+                        </span>
+                        <span className="app-position">
+                          {application.position}
+                        </span>
+                      </div>
+                      <StatusBadge status={application.status} />
                     </div>
-                    <div>
-                      <dt>Applied</dt>
-                      <dd>{formatDate(application.applied_at)}</dd>
-                    </div>
-                  </dl>
-                </Link>
-              </li>
-            ))}
+
+                    <dl className="application-card-details">
+                      <div>
+                        <dt>Location</dt>
+                        <dd>{application.location || '—'}</dd>
+                      </div>
+                      <div>
+                        <dt>Deadline</dt>
+                        <dd
+                          className={`deadline-cell deadline-${deadline.urgency}`}
+                        >
+                          {deadline.label}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>Applied</dt>
+                        <dd>{formatDate(application.applied_at)}</dd>
+                      </div>
+                    </dl>
+
+                    <span className="application-card-view">View details</span>
+                  </Link>
+                </li>
+              )
+            })}
           </ul>
 
           {totalPages > 1 ? (
