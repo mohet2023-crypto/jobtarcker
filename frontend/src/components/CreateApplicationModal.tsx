@@ -1,0 +1,324 @@
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
+
+import { ApiError } from '../services/api'
+import { createApplication } from '../services/applications'
+import {
+  APPLICATION_STATUS_LABELS,
+  APPLICATION_STATUS_ORDER,
+  type ApplicationStatus,
+} from '../types/application'
+
+type CreateApplicationModalProps = {
+  open: boolean
+  onClose: () => void
+  onCreated: () => void
+}
+
+type FormState = {
+  company: string
+  position: string
+  jobUrl: string
+  status: ApplicationStatus
+  location: string
+  salary: string
+  appliedAt: string
+  deadline: string
+  notes: string
+}
+
+const INITIAL_FORM: FormState = {
+  company: '',
+  position: '',
+  jobUrl: '',
+  status: 'SAVED',
+  location: '',
+  salary: '',
+  appliedAt: '',
+  deadline: '',
+  notes: '',
+}
+
+function datetimeLocalToIso(value: string): string | null {
+  const trimmed = value.trim()
+  if (!trimmed) {
+    return null
+  }
+
+  const date = new Date(trimmed)
+  if (Number.isNaN(date.getTime())) {
+    return null
+  }
+
+  return date.toISOString()
+}
+
+function emptyToNull(value: string): string | null {
+  const trimmed = value.trim()
+  return trimmed === '' ? null : trimmed
+}
+
+export function CreateApplicationModal({
+  open,
+  onClose,
+  onCreated,
+}: CreateApplicationModalProps) {
+  const titleId = useId()
+  const companyRef = useRef<HTMLInputElement>(null)
+  const [form, setForm] = useState<FormState>(INITIAL_FORM)
+  const [validationError, setValidationError] = useState<string | null>(null)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  useEffect(() => {
+    if (!open) {
+      return
+    }
+
+    setForm(INITIAL_FORM)
+    setValidationError(null)
+    setSubmitError(null)
+    setIsSubmitting(false)
+
+    const frame = window.requestAnimationFrame(() => {
+      companyRef.current?.focus()
+    })
+
+    return () => window.cancelAnimationFrame(frame)
+  }, [open])
+
+  useEffect(() => {
+    if (!open) {
+      return
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape' && !isSubmitting) {
+        onClose()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [open, isSubmitting, onClose])
+
+  if (!open) {
+    return null
+  }
+
+  function updateField<K extends keyof FormState>(key: K, value: FormState[K]) {
+    setForm((current) => ({ ...current, [key]: value }))
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (isSubmitting) {
+      return
+    }
+
+    setValidationError(null)
+    setSubmitError(null)
+
+    const company = form.company.trim()
+    const position = form.position.trim()
+
+    if (!company) {
+      setValidationError('Company is required.')
+      return
+    }
+    if (!position) {
+      setValidationError('Position is required.')
+      return
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      await createApplication({
+        company,
+        position,
+        job_url: emptyToNull(form.jobUrl),
+        status: form.status,
+        location: emptyToNull(form.location),
+        salary: emptyToNull(form.salary),
+        applied_at: datetimeLocalToIso(form.appliedAt),
+        deadline: datetimeLocalToIso(form.deadline),
+        notes: emptyToNull(form.notes),
+      })
+      onCreated()
+      onClose()
+    } catch (err) {
+      if (err instanceof ApiError && err.message) {
+        setSubmitError(err.message)
+      } else {
+        setSubmitError('Unable to create application. Please try again.')
+      }
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="modal-overlay" role="presentation">
+      <div
+        className="modal-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+      >
+        <div className="modal-header">
+          <h2 id={titleId}>Add Application</h2>
+          <button
+            type="button"
+            className="modal-close"
+            onClick={onClose}
+            disabled={isSubmitting}
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
+
+        <form className="modal-form" onSubmit={handleSubmit} noValidate>
+          {(validationError || submitError) && (
+            <p className="modal-error" role="alert">
+              {validationError ?? submitError}
+            </p>
+          )}
+
+          <div className="modal-grid">
+            <label className="applications-field">
+              <span className="field-label">Company *</span>
+              <input
+                ref={companyRef}
+                type="text"
+                value={form.company}
+                onChange={(event) => updateField('company', event.target.value)}
+                required
+                disabled={isSubmitting}
+                autoComplete="organization"
+              />
+            </label>
+
+            <label className="applications-field">
+              <span className="field-label">Position *</span>
+              <input
+                type="text"
+                value={form.position}
+                onChange={(event) =>
+                  updateField('position', event.target.value)
+                }
+                required
+                disabled={isSubmitting}
+              />
+            </label>
+
+            <label className="applications-field">
+              <span className="field-label">Job URL</span>
+              <input
+                type="url"
+                value={form.jobUrl}
+                onChange={(event) => updateField('jobUrl', event.target.value)}
+                placeholder="https://"
+                disabled={isSubmitting}
+              />
+            </label>
+
+            <label className="applications-field">
+              <span className="field-label">Status</span>
+              <select
+                value={form.status}
+                onChange={(event) =>
+                  updateField(
+                    'status',
+                    event.target.value as ApplicationStatus,
+                  )
+                }
+                disabled={isSubmitting}
+              >
+                {APPLICATION_STATUS_ORDER.map((value) => (
+                  <option key={value} value={value}>
+                    {APPLICATION_STATUS_LABELS[value]}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="applications-field">
+              <span className="field-label">Location</span>
+              <input
+                type="text"
+                value={form.location}
+                onChange={(event) =>
+                  updateField('location', event.target.value)
+                }
+                disabled={isSubmitting}
+              />
+            </label>
+
+            <label className="applications-field">
+              <span className="field-label">Salary</span>
+              <input
+                type="text"
+                value={form.salary}
+                onChange={(event) => updateField('salary', event.target.value)}
+                disabled={isSubmitting}
+              />
+            </label>
+
+            <label className="applications-field">
+              <span className="field-label">Applied Date</span>
+              <input
+                type="datetime-local"
+                value={form.appliedAt}
+                onChange={(event) =>
+                  updateField('appliedAt', event.target.value)
+                }
+                disabled={isSubmitting}
+              />
+            </label>
+
+            <label className="applications-field">
+              <span className="field-label">Deadline</span>
+              <input
+                type="datetime-local"
+                value={form.deadline}
+                onChange={(event) =>
+                  updateField('deadline', event.target.value)
+                }
+                disabled={isSubmitting}
+              />
+            </label>
+
+            <label className="applications-field modal-field-full">
+              <span className="field-label">Notes</span>
+              <textarea
+                value={form.notes}
+                onChange={(event) => updateField('notes', event.target.value)}
+                rows={4}
+                disabled={isSubmitting}
+              />
+            </label>
+          </div>
+
+          <div className="modal-actions">
+            <button
+              type="button"
+              className="modal-secondary"
+              onClick={onClose}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="modal-primary"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Creating...' : 'Create Application'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}

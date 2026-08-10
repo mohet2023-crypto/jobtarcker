@@ -1,5 +1,7 @@
 import { apiJson } from './api'
 import type {
+  Application,
+  ApplicationCreateRequest,
   ApplicationListParams,
   ApplicationListResponse,
 } from '../types/application'
@@ -35,4 +37,13 @@ export async function getApplications(
   return apiJson<ApplicationListResponse>(
     suffix ? `/applications?${suffix}` : '/applications',
   )
+}
+
+export async function createApplication(
+  data: ApplicationCreateRequest,
+): Promise<Application> {
+  return apiJson<Application>('/applications', {
+    method: 'POST',
+    body: data,
+  })
 }

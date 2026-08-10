@@ -49,6 +49,18 @@ export type ApplicationListParams = {
   sort_order?: ApplicationSortOrder
 }
 
+export type ApplicationCreateRequest = {
+  company: string
+  position: string
+  job_url?: string | null
+  status?: ApplicationStatus
+  location?: string | null
+  salary?: string | null
+  applied_at?: string | null
+  deadline?: string | null
+  notes?: string | null
+}
+
 export const APPLICATION_STATUS_ORDER: ApplicationStatus[] = [
   'SAVED',
   'APPLIED',

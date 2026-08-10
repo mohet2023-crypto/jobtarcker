@@ -1,6 +1,7 @@
 import { useEffect, useState, type ChangeEvent } from 'react'
 import { Link } from 'react-router-dom'
 
+import { CreateApplicationModal } from '../components/CreateApplicationModal'
 import { getApplications } from '../services/applications'
 import {
   APPLICATION_STATUS_LABELS,
@@ -65,6 +66,7 @@ export function ApplicationsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [reloadKey, setReloadKey] = useState(0)
+  const [isCreateOpen, setIsCreateOpen] = useState(false)
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -154,6 +156,11 @@ export function ApplicationsPage() {
     setReloadKey((key) => key + 1)
   }
 
+  function handleCreated() {
+    setPage(1)
+    setReloadKey((key) => key + 1)
+  }
+
   const totalPages = data?.pages ?? 0
   const currentPage = data?.page ?? page
   const items = data?.items ?? []
@@ -162,11 +169,28 @@ export function ApplicationsPage() {
   return (
     <div className="applications-page">
       <header className="applications-header">
-        <h1>Applications</h1>
-        <p className="applications-lead">
-          Track and manage your job applications.
-        </p>
+        <div className="applications-header-row">
+          <div>
+            <h1>Applications</h1>
+            <p className="applications-lead">
+              Track and manage your job applications.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="applications-add"
+            onClick={() => setIsCreateOpen(true)}
+          >
+            + Add Application
+          </button>
+        </div>
       </header>
+
+      <CreateApplicationModal
+        open={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+        onCreated={handleCreated}
+      />
 
       <section className="applications-toolbar" aria-label="Filters">
         <label className="applications-field applications-search">
