@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import timedelta
 
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
@@ -104,8 +104,16 @@ def test_timeline_ordered_by_occurred_at_then_id(
     token = _register_and_login(client, email="tlorder@example.com")
     created = _create_app(client, token, status="SAVED")
 
+    created_event = (
+        db_session.query(ApplicationEvent)
+        .filter(
+            ApplicationEvent.application_id == created["id"],
+            ApplicationEvent.event_type == ApplicationEventType.CREATED,
+        )
+        .one()
+    )
     # Force two later events with identical occurred_at to test id ASC tie-break.
-    shared_time = datetime(2026, 8, 10, 15, 0, 0, tzinfo=timezone.utc)
+    shared_time = created_event.occurred_at + timedelta(minutes=5)
     db_session.add_all(
         [
             ApplicationEvent(
