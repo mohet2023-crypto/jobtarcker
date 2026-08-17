@@ -13,6 +13,7 @@ from app.config import (
     validate_runtime_config,
 )
 from app.dashboard.router import router as dashboard_router
+from app.discovered_jobs.router import router as discovered_jobs_router
 
 
 @asynccontextmanager
@@ -48,6 +49,7 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(applications_router)
 app.include_router(dashboard_router)
+app.include_router(discovered_jobs_router)
 
 
 @app.get("/health")

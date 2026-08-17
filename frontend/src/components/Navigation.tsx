@@ -105,6 +105,11 @@ export function Navigation() {
                     Applications
                   </NavLink>
                 </li>
+                <li>
+                  <NavLink to="/global-jobs" className={navClassName}>
+                    Global Jobs
+                  </NavLink>
+                </li>
                 <li className="site-nav-actions">
                   <Link to="/applications" className="nav-cta">
                     + Add Application

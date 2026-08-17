@@ -16,7 +16,7 @@ os.environ.setdefault("FRONTEND_ORIGIN", "http://localhost:5173")
 from app.db.database import Base  # noqa: E402
 from app.db.dependencies import get_db  # noqa: E402
 from app.main import app  # noqa: E402
-from app.models import ApplicationEvent, JobApplication, User  # noqa: E402, F401
+from app.models import ApplicationEvent, DiscoveredJob, JobApplication, User  # noqa: E402, F401
 
 
 @pytest.fixture()

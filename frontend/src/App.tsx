@@ -6,6 +6,7 @@ import { AuthProvider } from './context/AuthContext'
 import { ApplicationDetailPage } from './pages/ApplicationDetailPage'
 import { ApplicationsPage } from './pages/ApplicationsPage'
 import { DashboardPage } from './pages/DashboardPage'
+import { GlobalJobsPage } from './pages/GlobalJobsPage'
 import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
 import { RegisterPage } from './pages/RegisterPage'
@@ -24,6 +25,7 @@ function App() {
               <Route element={<ProtectedRoute />}>
                 <Route path="/dashboard" element={<DashboardPage />} />
                 <Route path="/applications" element={<ApplicationsPage />} />
+                <Route path="/global-jobs" element={<GlobalJobsPage />} />
                 <Route
                   path="/applications/:id"
                   element={<ApplicationDetailPage />}

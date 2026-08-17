@@ -4,7 +4,7 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from app.db.database import DATABASE_URL, Base
-from app.models import ApplicationEvent, JobApplication, User  # noqa: F401
+from app.models import ApplicationEvent, DiscoveredJob, JobApplication, User  # noqa: F401
 
 config = context.config
 
