@@ -4,6 +4,11 @@ import { getDiscoveredJobs } from '../services/discoveredJobs'
 import {
   ELIGIBILITY_STATUS_LABELS,
   ELIGIBILITY_STATUS_ORDER,
+  formatInternationalEligibility,
+  formatRemoteStatus,
+  formatSourceLabel,
+  formatVisaStatus,
+  sourceLinkLabel,
   type DiscoveredJobListResponse,
   type DiscoveredJobSortBy,
   type DiscoveredJobSortOrder,
@@ -18,10 +23,6 @@ const SORT_LABELS: Record<DiscoveredJobSortBy, string> = {
   discovered_at: 'Date discovered',
   company: 'Company',
   title: 'Title',
-}
-
-function eligibilityLabel(value: EligibilityStatus): string {
-  return ELIGIBILITY_STATUS_LABELS[value]
 }
 
 function GlobalJobsSkeleton() {
@@ -292,7 +293,7 @@ export function GlobalJobsPage() {
           <p className="global-jobs-empty-copy">
             {hasActiveFilters
               ? 'Try broadening your search or clearing filters. New job sources will appear here once ingestion is enabled.'
-              : 'We are building the foundation to surface international, remote, and relocation-friendly roles. Your application tracker continues to work as usual in the meantime.'}
+              : 'No global jobs in your database yet. Run the Himalayas ingestion script to import listings, or check back after your team syncs job data.'}
           </p>
           {hasActiveFilters ? (
             <button
@@ -328,22 +329,34 @@ export function GlobalJobsPage() {
                   <p className="global-jobs-card-meta">
                     {job.location ?? 'Location not specified'}
                     {job.employment_type ? ` · ${job.employment_type}` : ''}
+                    {job.salary ? ` · ${job.salary}` : ''}
                   </p>
+                  {job.experience_level ? (
+                    <p className="global-jobs-card-meta">
+                      Experience: {job.experience_level}
+                    </p>
+                  ) : null}
                 </div>
                 <dl className="global-jobs-card-eligibility">
                   <div>
-                    <dt>Remote</dt>
-                    <dd>{eligibilityLabel(job.remote_status)}</dd>
-                  </div>
-                  <div>
-                    <dt>Visa</dt>
-                    <dd>{eligibilityLabel(job.visa_sponsorship_status)}</dd>
+                    <dt>Work style</dt>
+                    <dd>{formatRemoteStatus(job.remote_status)}</dd>
                   </div>
                   <div>
                     <dt>International</dt>
                     <dd>
-                      {eligibilityLabel(job.international_eligibility_status)}
+                      {formatInternationalEligibility(
+                        job.international_eligibility_status,
+                      )}
                     </dd>
+                  </div>
+                  <div>
+                    <dt>Visa</dt>
+                    <dd>{formatVisaStatus(job.visa_sponsorship_status)}</dd>
+                  </div>
+                  <div>
+                    <dt>Source</dt>
+                    <dd>{formatSourceLabel(job.source)}</dd>
                   </div>
                   <div>
                     <dt>Discovered</dt>
@@ -357,7 +370,7 @@ export function GlobalJobsPage() {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    View source
+                    {sourceLinkLabel(job.source)}
                   </a>
                 ) : null}
               </li>
@@ -391,6 +404,19 @@ export function GlobalJobsPage() {
               </button>
             </nav>
           ) : null}
+
+          <p className="global-jobs-attribution">
+            Listings may include jobs sourced from{' '}
+            <a
+              href="https://himalayas.app"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Himalayas
+            </a>
+            . Eligibility labels reflect only what each source provides — unknown
+            means we do not guess.
+          </p>
         </>
       ) : null}
     </div>

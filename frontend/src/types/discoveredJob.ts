@@ -12,6 +12,53 @@ export const ELIGIBILITY_STATUS_LABELS: Record<EligibilityStatus, string> = {
   NO: 'No',
 }
 
+/** User-facing remote label (does not overstate eligibility). */
+export function formatRemoteStatus(status: EligibilityStatus): string {
+  if (status === 'YES') {
+    return 'Remote'
+  }
+  if (status === 'NO') {
+    return 'Not remote'
+  }
+  return 'Remote · Unknown'
+}
+
+/** User-facing international eligibility label. */
+export function formatInternationalEligibility(status: EligibilityStatus): string {
+  if (status === 'YES') {
+    return 'Worldwide'
+  }
+  if (status === 'NO') {
+    return 'Country restricted'
+  }
+  return 'Eligibility unknown'
+}
+
+/** User-facing visa sponsorship label. */
+export function formatVisaStatus(status: EligibilityStatus): string {
+  if (status === 'YES') {
+    return 'Visa sponsorship'
+  }
+  if (status === 'NO') {
+    return 'No sponsorship'
+  }
+  return 'Visa · Unknown'
+}
+
+export function formatSourceLabel(source: string): string {
+  if (source === 'himalayas') {
+    return 'Himalayas'
+  }
+  return source
+}
+
+export function sourceLinkLabel(source: string): string {
+  if (source === 'himalayas') {
+    return 'View on Himalayas'
+  }
+  return 'View source'
+}
+
 export type DiscoveredJob = {
   id: number
   title: string

@@ -188,3 +188,20 @@ def validate_runtime_config() -> None:
                 "JWT_SECRET_KEY still looks like a placeholder. "
                 "Set a real production secret before starting the API."
             )
+
+
+def get_himalayas_api_url() -> str:
+    load_env_file()
+    default = "https://himalayas.app/jobs/api"
+    configured = os.environ.get("HIMALAYAS_API_URL", "").strip()
+    return configured or default
+
+
+def get_himalayas_max_pages(default: int = 1) -> int:
+    load_env_file()
+    raw = os.environ.get("HIMALAYAS_MAX_PAGES", str(default)).strip() or str(default)
+    try:
+        value = int(raw)
+    except ValueError as exc:
+        raise RuntimeError("HIMALAYAS_MAX_PAGES must be an integer.") from exc
+    return max(1, value)

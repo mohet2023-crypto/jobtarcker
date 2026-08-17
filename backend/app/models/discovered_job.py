@@ -2,7 +2,7 @@ import enum
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import DateTime, Enum, String, Text, func
+from sqlalchemy import DateTime, Enum, String, Text, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.database import Base
@@ -28,6 +28,13 @@ class DiscoveredJob(Base):
     """A job discovered from an external or curated source (not a user application)."""
 
     __tablename__ = "discovered_jobs"
+    __table_args__ = (
+        UniqueConstraint(
+            "source",
+            "external_job_id",
+            name="uq_discovered_jobs_source_external_job_id",
+        ),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(String(255))
@@ -36,6 +43,11 @@ class DiscoveredJob(Base):
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     employment_type: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     source: Mapped[str] = mapped_column(String(100))
+    external_job_id: Mapped[Optional[str]] = mapped_column(
+        String(255),
+        nullable=True,
+        index=True,
+    )
     source_url: Mapped[Optional[str]] = mapped_column(String(2048), nullable=True)
     remote_status: Mapped[EligibilityStatus] = mapped_column(
         eligibility_status_enum,

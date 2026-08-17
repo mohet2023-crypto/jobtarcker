@@ -1,0 +1,46 @@
+{
+  "totalCount": 2,
+  "offset": 0,
+  "limit": 20,
+  "updatedAt": 1700000000000,
+  "jobs": [
+    {
+      "guid": "himalayas-job-guid-001",
+      "title": "Senior Software Engineer",
+      "excerpt": "Build distributed systems for a global team.",
+      "companyName": "Acme Remote",
+      "companySlug": "acme-remote",
+      "employmentType": "Full Time",
+      "minSalary": 120000,
+      "maxSalary": 160000,
+      "currency": "USD",
+      "salaryPeriod": "annual",
+      "seniority": ["Senior"],
+      "locationRestrictions": [],
+      "timezoneRestrictions": [],
+      "categories": ["Engineering", "Backend"],
+      "description": "<p>Work with a <strong>global</strong> team.</p>",
+      "pubDate": 1700000000000,
+      "applicationLink": "https://himalayas.app/companies/acme-remote/jobs/senior-software-engineer"
+    },
+    {
+      "guid": "himalayas-job-guid-002",
+      "title": "Product Designer",
+      "excerpt": "Design for users in North America.",
+      "companyName": "Design Co",
+      "companySlug": "design-co",
+      "employmentType": "Full Time",
+      "minSalary": null,
+      "maxSalary": null,
+      "currency": "USD",
+      "seniority": ["Mid-level"],
+      "locationRestrictions": [
+        {"alpha2": "US", "name": "United States", "slug": "united-states"}
+      ],
+      "categories": ["Design"],
+      "description": "Lead product design.",
+      "pubDate": 1700100000000,
+      "applicationLink": "https://himalayas.app/companies/design-co/jobs/product-designer"
+    }
+  ]
+}

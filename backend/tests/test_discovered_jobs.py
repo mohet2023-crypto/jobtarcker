@@ -43,6 +43,7 @@ def _seed_discovered_job(db_session: Session) -> DiscoveredJob:
         description="Build global infrastructure.",
         employment_type="FULL_TIME",
         source="curated",
+        external_job_id="curated-globex-platform",
         source_url="https://example.com/jobs/platform-engineer",
         remote_status=EligibilityStatus.YES,
         visa_sponsorship_status=EligibilityStatus.UNKNOWN,
