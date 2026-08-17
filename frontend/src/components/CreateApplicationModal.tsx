@@ -170,13 +170,16 @@ export function CreateApplicationModal({
         aria-busy={isSubmitting}
       >
         <div className="modal-header">
-          <h2 id={titleId}>Add Application</h2>
+          <div className="modal-header-copy">
+            <h2 id={titleId}>Add Application</h2>
+            <p className="modal-subtitle">Track a new job opportunity.</p>
+          </div>
           <button
             type="button"
             className="modal-close"
             onClick={handleClose}
             disabled={isSubmitting}
-            aria-label="Close"
+            aria-label="Close dialog"
           >
             ×
           </button>
@@ -189,9 +192,13 @@ export function CreateApplicationModal({
             </p>
           ) : null}
 
-          <div className="modal-grid">
+          <div className="modal-section">
+            <p className="modal-section-title">Role details</p>
+            <div className="modal-grid">
             <label className="applications-field">
-              <span className="field-label">Company *</span>
+              <span className="field-label">
+                Company <span className="field-required" aria-hidden="true">*</span>
+              </span>
               <input
                 ref={companyRef}
                 type="text"
@@ -204,7 +211,9 @@ export function CreateApplicationModal({
             </label>
 
             <label className="applications-field">
-              <span className="field-label">Position *</span>
+              <span className="field-label">
+                Position <span className="field-required" aria-hidden="true">*</span>
+              </span>
               <input
                 type="text"
                 value={form.position}
@@ -268,9 +277,14 @@ export function CreateApplicationModal({
                 disabled={isSubmitting}
               />
             </label>
+            </div>
+          </div>
 
+          <div className="modal-section">
+            <p className="modal-section-title">Dates &amp; notes</p>
+            <div className="modal-grid">
             <label className="applications-field">
-              <span className="field-label">Applied Date</span>
+              <span className="field-label">Applied date</span>
               <input
                 type="datetime-local"
                 value={form.appliedAt}
@@ -302,12 +316,13 @@ export function CreateApplicationModal({
                 disabled={isSubmitting}
               />
             </label>
+            </div>
           </div>
 
           <div className="modal-actions">
             <button
               type="button"
-              className="modal-secondary"
+              className="btn btn-secondary"
               onClick={handleClose}
               disabled={isSubmitting}
             >
@@ -315,10 +330,10 @@ export function CreateApplicationModal({
             </button>
             <button
               type="submit"
-              className="modal-primary"
+              className="btn btn-primary"
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Creating…' : 'Create Application'}
+              {isSubmitting ? 'Creating…' : 'Create application'}
             </button>
           </div>
         </form>

@@ -75,8 +75,13 @@ export function RegisterPage() {
   return (
     <div className="auth-page">
       <form className="auth-card" onSubmit={handleSubmit} noValidate>
-        <h1>Register</h1>
-        <p className="auth-subtitle">Create an account to track your applications.</p>
+        <div className="auth-card-header">
+          <p className="auth-eyebrow">Deadline Dash</p>
+          <h1>Create your account</h1>
+          <p className="auth-subtitle">
+            Start organizing your job search in one place.
+          </p>
+        </div>
 
         {error ? (
           <p className="auth-error" role="alert">
@@ -85,7 +90,7 @@ export function RegisterPage() {
         ) : null}
 
         <label className="auth-field" htmlFor="register-full-name">
-          <span>Full name</span>
+          <span className="field-label">Full name</span>
           <input
             id="register-full-name"
             name="full_name"
@@ -99,7 +104,7 @@ export function RegisterPage() {
         </label>
 
         <label className="auth-field" htmlFor="register-email">
-          <span>Email</span>
+          <span className="field-label">Email</span>
           <input
             id="register-email"
             name="email"
@@ -113,7 +118,7 @@ export function RegisterPage() {
         </label>
 
         <label className="auth-field" htmlFor="register-password">
-          <span>Password</span>
+          <span className="field-label">Password</span>
           <input
             id="register-password"
             name="password"
@@ -124,11 +129,15 @@ export function RegisterPage() {
             required
             minLength={8}
             disabled={isSubmitting}
+            aria-describedby="register-password-hint"
           />
+          <span id="register-password-hint" className="auth-field-hint">
+            Must be at least 8 characters.
+          </span>
         </label>
 
         <button
-          className="auth-submit"
+          className="btn btn-primary auth-submit"
           type="submit"
           disabled={isSubmitting}
         >
@@ -136,7 +145,7 @@ export function RegisterPage() {
         </button>
 
         <p className="auth-footer">
-          Already have an account? <Link to="/login">Login</Link>
+          Already have an account? <Link to="/login">Sign in</Link>
         </p>
       </form>
     </div>

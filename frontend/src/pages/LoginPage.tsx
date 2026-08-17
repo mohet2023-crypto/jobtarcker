@@ -55,8 +55,13 @@ export function LoginPage() {
   return (
     <div className="auth-page">
       <form className="auth-card" onSubmit={handleSubmit} noValidate>
-        <h1>Login</h1>
-        <p className="auth-subtitle">Sign in to continue to Deadline Dash.</p>
+        <div className="auth-card-header">
+          <p className="auth-eyebrow">Deadline Dash</p>
+          <h1>Welcome back</h1>
+          <p className="auth-subtitle">
+            Sign in to track your applications and stay ahead of deadlines.
+          </p>
+        </div>
 
         {successMessage ? (
           <p className="auth-success" role="status">
@@ -71,7 +76,7 @@ export function LoginPage() {
         ) : null}
 
         <label className="auth-field" htmlFor="login-email">
-          <span>Email</span>
+          <span className="field-label">Email</span>
           <input
             id="login-email"
             name="email"
@@ -85,7 +90,7 @@ export function LoginPage() {
         </label>
 
         <label className="auth-field" htmlFor="login-password">
-          <span>Password</span>
+          <span className="field-label">Password</span>
           <input
             id="login-password"
             name="password"
@@ -99,7 +104,7 @@ export function LoginPage() {
         </label>
 
         <button
-          className="auth-submit"
+          className="btn btn-primary auth-submit"
           type="submit"
           disabled={isSubmitting}
         >
@@ -107,7 +112,7 @@ export function LoginPage() {
         </button>
 
         <p className="auth-footer">
-          Don&apos;t have an account? <Link to="/register">Register</Link>
+          Don&apos;t have an account? <Link to="/register">Create one</Link>
         </p>
       </form>
     </div>

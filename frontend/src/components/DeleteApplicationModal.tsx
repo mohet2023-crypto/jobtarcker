@@ -97,21 +97,26 @@ export function DeleteApplicationModal({
       }}
     >
       <div
-        className="modal-dialog modal-dialog-compact"
-        role="dialog"
+        className="modal-dialog modal-dialog-compact modal-dialog-danger"
+        role="alertdialog"
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={error ? `${descriptionId} ${errorId}` : descriptionId}
         aria-busy={isDeleting}
       >
         <div className="modal-header">
-          <h2 id={titleId}>Delete this application?</h2>
+          <div className="modal-header-copy">
+            <h2 id={titleId}>Delete application?</h2>
+            <p className="modal-subtitle modal-subtitle-danger">
+              This action cannot be undone.
+            </p>
+          </div>
           <button
             type="button"
             className="modal-close"
             onClick={handleClose}
             disabled={isDeleting}
-            aria-label="Close"
+            aria-label="Close dialog"
           >
             ×
           </button>
@@ -119,8 +124,8 @@ export function DeleteApplicationModal({
 
         <div className="modal-form">
           <p id={descriptionId} className="delete-confirm-copy">
-            This will permanently delete <strong>{company}</strong>. This action
-            cannot be undone.
+            You are about to permanently delete{' '}
+            <strong>{company}</strong> from your tracker.
           </p>
 
           {error ? (
@@ -133,7 +138,7 @@ export function DeleteApplicationModal({
             <button
               ref={cancelRef}
               type="button"
-              className="modal-secondary"
+              className="btn btn-secondary"
               onClick={handleClose}
               disabled={isDeleting}
             >
@@ -141,13 +146,13 @@ export function DeleteApplicationModal({
             </button>
             <button
               type="button"
-              className="modal-danger"
+              className="btn btn-danger"
               onClick={() => {
                 void handleConfirm()
               }}
               disabled={isDeleting}
             >
-              {isDeleting ? 'Deleting…' : 'Delete Application'}
+              {isDeleting ? 'Deleting…' : 'Delete application'}
             </button>
           </div>
         </div>
